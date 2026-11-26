@@ -104,6 +104,7 @@ src/
 │   ├── PlayerKit                          torch + stamina
 │   └── EVAClient, GuideTrail, BlurGuard
 └── Workspace/                             small prop scripts (Earth spin, nav lights)
+arduino/Arduino_Code_Controller/           Arduino Uno firmware (.ino)
 controller/bridge.py                       Arduino → keyboard bridge (Windows)
 docs/DESIGN.md                             full design doc: story, systems, map, audit
 ```
@@ -115,6 +116,31 @@ The server is authoritative. `GameStateManager` runs a finite-state machine (`Ma
 
 ## 🔌 Arduino console
 
+A custom game controller built from an **Arduino Uno**, two analog joysticks and three push buttons, housed in a hand-made box.
+
+<div align="center">
+  <img src="docs/img/console.jpeg" width="32%" alt="Finished console" />
+  <img src="docs/img/console-complete.jpeg" width="32%" alt="Console assembled" />
+  <img src="docs/img/console-circuit.jpeg" width="32%" alt="Open circuit: Uno + breadboard" />
+</div>
+
+### Hardware
+| Part | Pin | Job |
+|---|---|---|
+| Joystick 1 X / Y | A0, A1 | Move (A/D, W/S) |
+| Joystick 2 X / Y | A2, A3 | Arrows + camera up/down |
+| Button | D10 | Space (held) |
+| Button | D6 | E (interact) |
+| Button | D3 | F (torch) |
+
+Buttons use `INPUT_PULLUP` (press = LOW), with a 15 ms debounce. E and F send a 100 ms tap per press. Joysticks self-calibrate their centre at boot, so **leave both sticks centred while the Uno powers on**.
+
+### Setup
+1. Flash [`arduino/Arduino_Code_Controller/Arduino_Code_Controller.ino`](arduino/Arduino_Code_Controller/Arduino_Code_Controller.ino) to the Uno with Arduino IDE.
+2. Run the bridge: `python controller/bridge.py COM6` (check Device Manager for your port).
+3. Click into Roblox and play.
+
+### Protocol
 The console streams `GC,<mask>` lines at 115200 baud. Each bit is one button:
 
 | Bit | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
